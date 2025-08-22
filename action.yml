@@ -13,6 +13,10 @@ inputs:
     description: CI/CD environment
     required: true
     default: 'dev'
+  gitops-repo-suffix:
+    description: Suffix for the GitOps repository name
+    required: false
+    default: '-gitops'
 
 # Define your outputs here.
 outputs:
@@ -32,6 +36,8 @@ outputs:
     description: The local service FQDN
   service-url:
     description: The service URL
+  result:
+    description: The result of the action
 
 runs:
   using: node20

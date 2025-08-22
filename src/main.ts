@@ -8,15 +8,11 @@ import { setOutputs } from './setOutputs.js'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-
-
     // Log the current timestamp, wait, then log the new timestamp
     await setOutputs()
     core.debug(new Date().toTimeString())
 
     // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
   } catch (error: unknown) {
     if (error instanceof Error) {
       core.error(`Action failed with error: ${error.message}`)
@@ -26,6 +22,6 @@ export async function run(): Promise<void> {
       core.setFailed('Unknown error occurred')
     }
   } finally {
-    core.setOutput('report', '')
+    core.setOutput('result', 'ok')
   }
 }
