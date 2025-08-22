@@ -9,15 +9,29 @@ branding:
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  environment:
+    description: CI/CD environment
     required: true
-    default: '1000'
+    default: 'dev'
 
 # Define your outputs here.
 outputs:
-  time:
-    description: Your output description here
+  start-time:
+    description: Worflow start time in milliseconds since epoch
+  gitops-repo:
+    description: The gitops repo name
+  gitops-file:
+    description: The gitops file path
+  app-name:
+    description: The application name
+  target-namespace:
+    description: The target K8S namespace
+  public-service-fqdn:
+    description: The public service FQDN
+  local-service-fqdn:
+    description: The local service FQDN
+  service-url:
+    description: The service URL
 
 runs:
   using: node20
