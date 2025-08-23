@@ -29,10 +29,10 @@ To use this action in your workflow, add the following step:
 
 ## Inputs
 
-| Name                 | Description                          | Required | Default   |
-| -------------------- | ------------------------------------ | -------- | --------- |
-| `environment`        | CI/CD environment                    | Yes      | `dev`     |
-| `gitops-repo-suffix` | Suffix for GitOps repository name    | No       | `-gitops` |
+| Name                 | Description                       | Required | Default   |
+| -------------------- | --------------------------------- | -------- | --------- |
+| `environment`        | CI/CD environment                 | Yes      | `dev`     |
+| `gitops-repo-suffix` | Suffix for GitOps repository name | No       | `-gitops` |
 
 ## Outputs
 
