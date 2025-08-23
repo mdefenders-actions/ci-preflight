@@ -31261,15 +31261,13 @@ async function setOutputs() {
     const gitopsRepoSuffix = coreExports.getInput('gitops-repo-suffix', {
         required: true
     });
-    const gitopsRepo = process.env.GITOPS_REPO && process.env.GITOPS_REPO.trim() !== ''
-        ? process.env.GITOPS_REPO
-        : `${owner}/${repo}${gitopsRepoSuffix}`;
-    const gitopsFilePath = process.env.GITOPS_FILE_PATH || 'deploy/environments';
-    const gitopsFileName = process.env.GITOPS_FILE_NAME || 'values.yaml';
-    const appName = process.env.APP_NAME || repo;
-    const domain = process.env.DOMAIN || 'example.com';
-    const devSchema = process.env.DEV_SCHEMA || 'http://';
-    let devPort = process.env.DEV_PORT || '80';
+    const gitopsRepo = coreExports.getInput('gitops-repo') || `${owner}/${repo}${gitopsRepoSuffix}`;
+    const gitopsFilePath = coreExports.getInput('gitops-file-path');
+    const gitopsFileName = coreExports.getInput('gitops-file-name');
+    const appName = coreExports.getInput('app-name') || repo;
+    const domain = coreExports.getInput('domain', { required: true });
+    const devSchema = coreExports.getInput('dev-url-schema');
+    let devPort = coreExports.getInput('dev-port');
     devPort = normalizeDevPort(devSchema, devPort);
     // Determine repo name and base
     const repoName = (process.env.GITOPS_REPO || '').split('/').pop() || repo;

@@ -1,11 +1,14 @@
 # CI Preflight GitHub Action
 
-> Collect and normalize deployment metadata for your CI/CD pipeline. Outputs key information for use in subsequent workflow steps and generates a Markdown summary report.
+> Collect and normalize deployment metadata for your CI/CD pipeline. Outputs key
+> information for use in subsequent workflow steps and generates a Markdown
+> summary report.
 
 [![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/ci.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
 ## Features
+
 - Collects environment and repository metadata
 - Normalizes application and service information
 - Outputs all data for use in later workflow steps
@@ -13,25 +16,28 @@
 - Robust error handling and logging
 
 ## Installation
+
 To use this action in your workflow, add the following step:
 
 ```yaml
 - name: CI Preflight
   uses: <owner>/<repo>@v1 # Replace with your repository and version/tag
   with:
-    environment: "dev"
-    gitops-repo-suffix: "-gitops"
+    environment: 'dev'
+    gitops-repo-suffix: '-gitops'
 ```
 
 ## Inputs
-| Name                  | Description                          | Required | Default    |
-|-----------------------|--------------------------------------|----------|------------|
-| `environment`         | CI/CD environment                    | Yes      | `dev`      |
-| `gitops-repo-suffix`  | Suffix for GitOps repo name          | No       | `-gitops`  |
+
+| Name                 | Description                 | Required | Default   |
+| -------------------- | --------------------------- | -------- | --------- |
+| `environment`        | CI/CD environment           | Yes      | `dev`     |
+| `gitops-repo-suffix` | Suffix for GitOps repo name | No       | `-gitops` |
 
 ## Outputs
+
 | Name                  | Description                          |
-|-----------------------|--------------------------------------|
+| --------------------- | ------------------------------------ |
 | `start-time`          | Workflow start time (ms since epoch) |
 | `gitops-repo`         | The GitOps repo name                 |
 | `gitops-file`         | The GitOps file path                 |
@@ -43,6 +49,7 @@ To use this action in your workflow, add the following step:
 | `result`              | JSON string of all outputs           |
 
 ## Example Workflow
+
 ```yaml
 name: CI Pipeline
 on:
@@ -57,8 +64,8 @@ jobs:
       - name: CI Preflight
         uses: <owner>/<repo>@v1
         with:
-          environment: "dev"
-          gitops-repo-suffix: "-gitops"
+          environment: 'dev'
+          gitops-repo-suffix: '-gitops'
       - name: Print outputs
         run: echo "App name is ${{ steps.ci-preflight.outputs.app-name }}"
 ```
@@ -66,27 +73,35 @@ jobs:
 ## Development
 
 ### Setup
+
 Install dependencies:
+
 ```bash
 npm install
 ```
 
 ### Testing
+
 Run unit tests:
+
 ```bash
 npm run test
 ```
 
 ### Bundling
+
 Transpile TypeScript and bundle for distribution:
+
 ```bash
 npm run bundle
 ```
 
 ## Contributing
+
 - Follow TypeScript and GitHub Actions best practices
 - Add and update unit tests for new features
 - Document changes in this README
 
 ## License
+
 See [LICENSE](./LICENSE) for details.

@@ -11,12 +11,29 @@ branding:
 inputs:
   environment:
     description: CI/CD environment
-    required: true
     default: 'dev'
   gitops-repo-suffix:
     description: Suffix for the GitOps repository name
-    required: false
     default: '-gitops'
+  gitops-repo:
+    description: GitOps repository name (overrides suffix if provided)
+  gitops-file-path:
+    description: Path to the GitOps file (directory)
+    default: 'deploy/environments'
+  gitops-file-name:
+    description: Name of the GitOps file
+    default: 'values.yaml'
+  app-name:
+    description: Application name
+  domain:
+    description: Base domain for the service FQDN
+    required: true
+  dev-url-schema:
+    description: URL schema for the dev environment
+    default: 'http://'
+  dev-port:
+    description: Port for the dev environment service
+    default: '80'
 
 # Define your outputs here.
 outputs:

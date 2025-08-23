@@ -13,27 +13,27 @@ describe('setOutputs', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     core.getInput.mockImplementation((name: string) => {
-      if (name === 'environment') return 'dev'
-      if (name === 'gitops-repo-suffix') return '-gitops'
-      return ''
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': '',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
     })
     process.env.GITOPS_REPO = 'Octocat/MyApp-gitops'
-    process.env.GITOPS_FILE_PATH = ''
-    process.env.GITOPS_FILE_NAME = ''
-    process.env.APP_NAME = ''
-    process.env.DOMAIN = ''
-    process.env.DEV_SCHEMA = ''
-    process.env.DEV_PORT = ''
     github.context.repo = { owner: 'Octocat', repo: 'MyApp' }
     github.context.ref = 'refs/heads/FEature/branch_main'
-    // @ts-expect-error mocking missing repo
-
     github.context.payload = {}
   })
 
-  it('sets all expected outputs with default environment variables', async () => {
+  it('sets all expected outputs with default inputs', async () => {
     await setOutputs()
-    // console.error(core.setOutput.mock.calls)
     expect(core.setOutput).toHaveBeenCalledWith(
       'target-namespace',
       'myapp-feature-branch-main'
@@ -69,14 +69,21 @@ describe('setOutputs', () => {
     )
   })
 
-  it('uses environment variables when provided', async () => {
-    process.env.GITOPS_REPO = 'octocat/customrepo-gitops'
-    process.env.GITOPS_FILE_PATH = 'custom/path'
-    process.env.GITOPS_FILE_NAME = 'custom.yaml'
-    process.env.APP_NAME = 'customapp'
-    process.env.DOMAIN = 'custom.com'
-    process.env.DEV_SCHEMA = 'https://'
-    process.env.DEV_PORT = '443'
+  it('uses custom inputs when provided', async () => {
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': 'octocat/customrepo-gitops',
+        'gitops-file-path': 'custom/path',
+        'gitops-file-name': 'custom.yaml',
+        'app-name': 'customapp',
+        domain: 'custom.com',
+        'dev-url-schema': 'https://',
+        'dev-port': '443'
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'gitops-repo',
@@ -123,9 +130,20 @@ describe('setOutputs', () => {
   })
 
   it('sets service-url without port for http and port 80', async () => {
-    process.env.DEV_SCHEMA = 'http://'
-    process.env.DEV_PORT = '80'
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': '80'
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'service-url',
@@ -134,9 +152,20 @@ describe('setOutputs', () => {
   })
 
   it('sets service-url without port for https and port 443', async () => {
-    process.env.DEV_SCHEMA = 'https://'
-    process.env.DEV_PORT = '443'
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'https://',
+        'dev-port': '443'
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'service-url',
@@ -145,9 +174,20 @@ describe('setOutputs', () => {
   })
 
   it('sets service-url with custom port for http', async () => {
-    process.env.DEV_SCHEMA = 'http://'
-    process.env.DEV_PORT = '8080'
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': '8080'
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'service-url',
@@ -156,9 +196,20 @@ describe('setOutputs', () => {
   })
 
   it('sets service-url with custom port for https', async () => {
-    process.env.DEV_SCHEMA = 'https://'
-    process.env.DEV_PORT = '8443'
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'https://',
+        'dev-port': '8443'
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'service-url',
@@ -167,20 +218,42 @@ describe('setOutputs', () => {
   })
 
   it('sets service-url with empty port', async () => {
-    process.env.DEV_SCHEMA = 'http://'
-    process.env.DEV_PORT = ''
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'service-url',
-      'http://testapp.feature-branch-main.example.com:'.replace(/:$/, '')
+      'http://testapp.feature-branch-main.example.com'
     )
   })
 
   it('throws error for non-numeric port', async () => {
-    process.env.DEV_SCHEMA = 'http://'
-    process.env.DEV_PORT = 'abc'
-    process.env.APP_NAME = 'testapp'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'testapp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': 'abc'
+      }
+      return inputs[name] ?? ''
+    })
     await expect(setOutputs()).rejects.toThrow('DEV_PORT must be a number')
   })
   it('throws error for push tag', async () => {
@@ -210,8 +283,6 @@ describe('setOutputs', () => {
 
 describe('edge cases for repo and env vars', () => {
   beforeEach(() => {
-    // @ts-expect-error mocking missing repo
-
     github.context.payload = {}
   })
   it('falls back to repo name if GITOPS_REPO is empty', async () => {
@@ -233,6 +304,20 @@ describe('edge cases for repo and env vars', () => {
     process.env.GITOPS_REPO = 'malformedgitopsrepo'
     github.context.repo = { owner: 'Octocat', repo: 'MyApp' }
     github.context.ref = 'refs/heads/main'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': 'malformedgitopsrepo',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'MyApp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'gitops-repo',

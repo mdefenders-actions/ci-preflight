@@ -15,15 +15,13 @@ export async function setOutputs(): Promise<Record<string, string | number>> {
     required: true
   })
   const gitopsRepo =
-    process.env.GITOPS_REPO && process.env.GITOPS_REPO.trim() !== ''
-      ? process.env.GITOPS_REPO
-      : `${owner}/${repo}${gitopsRepoSuffix}`
-  const gitopsFilePath = process.env.GITOPS_FILE_PATH || 'deploy/environments'
-  const gitopsFileName = process.env.GITOPS_FILE_NAME || 'values.yaml'
-  const appName = process.env.APP_NAME || repo
-  const domain = process.env.DOMAIN || 'example.com'
-  const devSchema = process.env.DEV_SCHEMA || 'http://'
-  let devPort = process.env.DEV_PORT || '80'
+    core.getInput('gitops-repo') || `${owner}/${repo}${gitopsRepoSuffix}`
+  const gitopsFilePath = core.getInput('gitops-file-path')
+  const gitopsFileName = core.getInput('gitops-file-name')
+  const appName = core.getInput('app-name') || repo
+  const domain = core.getInput('domain', { required: true })
+  const devSchema = core.getInput('dev-url-schema')
+  let devPort = core.getInput('dev-port')
   devPort = normalizeDevPort(devSchema, devPort)
 
   // Determine repo name and base
