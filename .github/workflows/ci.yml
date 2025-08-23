@@ -57,8 +57,16 @@ jobs:
         id: test-action
         uses: ./
         with:
-          milliseconds: 2000
+          environment: dev
+          gitops-repo-suffix: -gitops
+          gitops-repo: ''
+          gitops-file-path: deploy/environments
+          gitops-file-name: values.yaml
+          app-name: ''
+          domain: example.com
+          dev-url-schema: http://
+          dev-port: '80'
 
       - name: Print Output
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: echo time
