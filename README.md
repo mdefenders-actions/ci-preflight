@@ -21,7 +21,7 @@ To use this action in your workflow, add the following step:
 
 ```yaml
 - name: CI Preflight
-  uses: <owner>/<repo>@v1 # Replace with your repository and version/tag
+  uses: <owner>/<repository>@v1 # Replace with your repository and version/tag
   with:
     environment: 'dev'
     gitops-repo-suffix: '-gitops'
@@ -29,17 +29,17 @@ To use this action in your workflow, add the following step:
 
 ## Inputs
 
-| Name                 | Description                 | Required | Default   |
-| -------------------- | --------------------------- | -------- | --------- |
-| `environment`        | CI/CD environment           | Yes      | `dev`     |
-| `gitops-repo-suffix` | Suffix for GitOps repo name | No       | `-gitops` |
+| Name                 | Description                          | Required | Default   |
+| -------------------- | ------------------------------------ | -------- | --------- |
+| `environment`        | CI/CD environment                    | Yes      | `dev`     |
+| `gitops-repo-suffix` | Suffix for GitOps repository name    | No       | `-gitops` |
 
 ## Outputs
 
 | Name                  | Description                          |
 | --------------------- | ------------------------------------ |
 | `start-time`          | Workflow start time (ms since epoch) |
-| `gitops-repo`         | The GitOps repo name                 |
+| `gitops-repo`         | The GitOps repository name           |
 | `gitops-file`         | The GitOps file path                 |
 | `app-name`            | The application name                 |
 | `target-namespace`    | The target Kubernetes namespace      |
@@ -62,7 +62,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: CI Preflight
-        uses: <owner>/<repo>@v1
+        uses: <owner>/<repository>@v1
         with:
           environment: 'dev'
           gitops-repo-suffix: '-gitops'
@@ -100,7 +100,7 @@ npm run bundle
 
 - Follow TypeScript and GitHub Actions best practices
 - Add and update unit tests for new features
-- Document changes in this README
+- Document changes in this readme
 
 ## License
 
