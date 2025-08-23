@@ -41,6 +41,10 @@ outputs:
     description: Worflow start time in milliseconds since epoch
   gitops-repo:
     description: The gitops repo name
+  effective-branch:
+    description:
+      The branch to use for GitOps operations (defaults to the head or base
+      branch)
   gitops-file:
     description: The gitops file path
   app-name:

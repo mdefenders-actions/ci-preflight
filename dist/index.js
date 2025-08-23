@@ -31269,20 +31269,23 @@ async function setOutputs() {
     const devSchema = coreExports.getInput('dev-url-schema');
     let devPort = coreExports.getInput('dev-port');
     devPort = normalizeDevPort(devSchema, devPort);
+    const branch = getBranchName();
     // Determine repo name and base
-    const repoName = (process.env.GITOPS_REPO || '').split('/').pop() || repo;
+    const repoName = gitopsRepo.split('/').pop() || repo + gitopsRepoSuffix;
     const base = repoName
         .replace(new RegExp(`${gitopsRepoSuffix}$`), '')
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '-');
     // Normalize branch
-    const branch = normalizeBranch(getBranchName());
+    const normBranch = normalizeBranch(branch);
     // Compose namespace
-    const namespace = `${base}-${branch}`;
+    const namespace = `${base}-${normBranch}`;
     coreExports.setOutput('target-namespace', namespace);
     result['target-namespace'] = namespace;
-    coreExports.setOutput('subdomain', branch);
-    result['subdomain'] = branch;
+    coreExports.setOutput('effective-branch', branch);
+    result['effective-branch'] = branch;
+    coreExports.setOutput('subdomain', normBranch);
+    result['subdomain'] = normBranch;
     const startTime = Date.now();
     coreExports.setOutput('start-time', startTime);
     result['start-time'] = startTime;
@@ -31293,13 +31296,13 @@ async function setOutputs() {
     result['gitops-file'] = gitopsFile;
     coreExports.setOutput('app-name', appName);
     result['app-name'] = appName;
-    const localFqdn = `${appName}.${branch}.svc.cluster.local`;
+    const localFqdn = `${appName}.${normBranch}.svc.cluster.local`;
     coreExports.setOutput('local-service-fqdn', localFqdn);
     result['local-service-fqdn'] = localFqdn;
-    const publicFqdn = `${appName}.${branch}.${domain}`;
+    const publicFqdn = `${appName}.${normBranch}.${domain}`;
     coreExports.setOutput('public-service-fqdn', publicFqdn);
     result['public-service-fqdn'] = publicFqdn;
-    const serviceUrl = `${devSchema}${appName}.${branch}.${domain}${devPort}`;
+    const serviceUrl = `${devSchema}${appName}.${normBranch}.${domain}${devPort}`;
     coreExports.setOutput('service-url', serviceUrl);
     result['service-url'] = serviceUrl;
     return result;
