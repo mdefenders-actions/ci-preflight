@@ -29,6 +29,7 @@ describe('setOutputs', () => {
     process.env.GITOPS_REPO = 'Octocat/MyApp-gitops'
     github.context.repo = { owner: 'Octocat', repo: 'MyApp' }
     github.context.ref = 'refs/heads/FEature/branch_main'
+    // @ts-expect-error mocking empty payload
     github.context.payload = {}
   })
 
@@ -279,16 +280,95 @@ describe('setOutputs', () => {
     )
     expect(core.setOutput).toHaveBeenCalledWith('subdomain', 'pr-branch')
   })
+
+  it('sets outputs for staging environment', async () => {
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'staging',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': '',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
+    })
+    await setOutputs()
+    expect(core.setOutput).toHaveBeenCalledWith('subdomain', 'staging')
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'service-url',
+      expect.stringContaining('.staging.example.com')
+    )
+    expect(core.setOutput).toHaveBeenCalledWith('target-namespace', 'staging')
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'local-service-fqdn',
+      expect.stringContaining('.staging.svc.cluster.local')
+    )
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'public-service-fqdn',
+      expect.stringContaining('.staging.example.com')
+    )
+  })
+
+  it('sets outputs for prod environment', async () => {
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'prod',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': '',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
+    })
+    await setOutputs()
+    expect(core.setOutput).toHaveBeenCalledWith('subdomain', '')
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'service-url',
+      expect.stringContaining('.example.com')
+    )
+    expect(core.setOutput).toHaveBeenCalledWith('target-namespace', 'prod')
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'local-service-fqdn',
+      expect.stringContaining('.prod.svc.cluster.local')
+    )
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'public-service-fqdn',
+      expect.stringContaining('.example.com')
+    )
+  })
 })
 
 describe('edge cases for repo and env vars', () => {
   beforeEach(() => {
+    // @ts-expect-error mocking empty payload
     github.context.payload = {}
   })
   it('falls back to repo name if GITOPS_REPO is empty', async () => {
     process.env.GITOPS_REPO = ''
     github.context.repo = { owner: 'Octocat', repo: 'MyApp' }
     github.context.ref = 'refs/heads/main'
+    core.getInput.mockImplementation((name: string) => {
+      const inputs: Record<string, string> = {
+        environment: 'dev',
+        'gitops-repo-suffix': '-gitops',
+        'gitops-repo': '',
+        'gitops-file-path': 'deploy/environments',
+        'gitops-file-name': 'values.yaml',
+        'app-name': 'MyApp',
+        domain: 'example.com',
+        'dev-url-schema': 'http://',
+        'dev-port': ''
+      }
+      return inputs[name] ?? ''
+    })
     await setOutputs()
     expect(core.setOutput).toHaveBeenCalledWith(
       'gitops-repo',

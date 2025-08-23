@@ -31248,96 +31248,78 @@ function requireGithub () {
 
 var githubExports = requireGithub();
 
-/**
- * Sets outputs for the GitHub Action.
- * @returns An object containing all output key-value pairs
- */
 async function setOutputs() {
     const result = {};
-    const environment = coreExports.getInput('environment', {
-        required: true
-    });
+    const environment = coreExports.getInput('environment', { required: true });
     const { owner, repo } = githubExports.context.repo;
     const gitopsRepoSuffix = coreExports.getInput('gitops-repo-suffix', {
         required: true
     });
     const gitopsRepo = coreExports.getInput('gitops-repo') || `${owner}/${repo}${gitopsRepoSuffix}`;
-    const gitopsFilePath = coreExports.getInput('gitops-file-path');
-    const gitopsFileName = coreExports.getInput('gitops-file-name');
     const appName = coreExports.getInput('app-name') || repo;
     const domain = coreExports.getInput('domain', { required: true });
     const devSchema = coreExports.getInput('dev-url-schema');
-    let devPort = coreExports.getInput('dev-port');
-    devPort = normalizeDevPort(devSchema, devPort);
+    const devPort = normalizeDevPort(devSchema, coreExports.getInput('dev-port'));
     const branch = getBranchName();
-    // Determine repo name and base
     const repoName = gitopsRepo.split('/').pop() || repo + gitopsRepoSuffix;
     const base = repoName
         .replace(new RegExp(`${gitopsRepoSuffix}$`), '')
         .toLowerCase()
         .replace(/[^a-z0-9-]/g, '-');
-    // Normalize branch
     const normBranch = normalizeBranch(branch);
-    // Compose namespace
-    const namespace = `${base}-${normBranch}`;
-    coreExports.setOutput('target-namespace', namespace);
-    result['target-namespace'] = namespace;
-    coreExports.setOutput('effective-branch', branch);
-    result['effective-branch'] = branch;
-    coreExports.setOutput('subdomain', normBranch);
-    result['subdomain'] = normBranch;
-    const startTime = Date.now();
-    coreExports.setOutput('start-time', startTime);
-    result['start-time'] = startTime;
-    coreExports.setOutput('gitops-repo', gitopsRepo);
-    result['gitops-repo'] = gitopsRepo;
-    const gitopsFile = `${gitopsFilePath}/${environment}/${gitopsFileName}`;
-    coreExports.setOutput('gitops-file', gitopsFile);
-    result['gitops-file'] = gitopsFile;
-    coreExports.setOutput('app-name', appName);
-    result['app-name'] = appName;
-    const localFqdn = `${appName}.${normBranch}.svc.cluster.local`;
-    coreExports.setOutput('local-service-fqdn', localFqdn);
-    result['local-service-fqdn'] = localFqdn;
-    const publicFqdn = `${appName}.${normBranch}.${domain}`;
-    coreExports.setOutput('public-service-fqdn', publicFqdn);
-    result['public-service-fqdn'] = publicFqdn;
-    const serviceUrl = `${devSchema}${appName}.${normBranch}.${domain}${devPort}`;
-    coreExports.setOutput('service-url', serviceUrl);
-    result['service-url'] = serviceUrl;
+    let namespace = `${base}-${normBranch}`;
+    let subDomain = normBranch;
+    let serviceUrl = `${devSchema}${appName}.${normBranch}.${domain}${devPort}`;
+    let localFqdn = `${appName}.${normBranch}.svc.cluster.local`;
+    let publicFqdn = `${appName}.${normBranch}.${domain}`;
+    if (environment === 'staging') {
+        subDomain = 'staging';
+        serviceUrl = `${devSchema}${appName}.staging.${domain}${devPort}`;
+        namespace = 'staging';
+        localFqdn = `${appName}.staging.svc.cluster.local`;
+        publicFqdn = `${appName}.staging.${domain}`;
+    }
+    else if (environment === 'prod') {
+        subDomain = '';
+        serviceUrl = `${devSchema}${appName}.${domain}${devPort}`;
+        namespace = 'prod';
+        localFqdn = `${appName}.prod.svc.cluster.local`;
+        publicFqdn = `${appName}.${domain}`;
+    }
+    const outputs = {
+        'target-namespace': namespace,
+        'effective-branch': branch,
+        subdomain: subDomain,
+        'start-time': Date.now(),
+        'gitops-repo': gitopsRepo,
+        'gitops-file': `${coreExports.getInput('gitops-file-path')}/${environment}/${coreExports.getInput('gitops-file-name')}`,
+        'app-name': appName,
+        'local-service-fqdn': localFqdn,
+        'public-service-fqdn': publicFqdn,
+        'service-url': serviceUrl
+    };
+    for (const [key, value] of Object.entries(outputs)) {
+        coreExports.setOutput(key, value);
+        result[key] = value;
+    }
     return result;
 }
-/**
- * Returns the branch name from the GitHub context.
- */
 function getBranchName() {
     const pr = githubExports.context.payload.pull_request;
     if (pr)
         return pr.head.ref;
     const ref = githubExports.context.ref;
-    if (!ref) {
+    if (!ref)
         throw new Error('github.context.ref is undefined. Cannot determine branch name.');
-    }
     if (ref.startsWith('refs/heads/'))
         return ref.substring('refs/heads/'.length);
-    if (ref.startsWith('refs/tags/')) {
+    if (ref.startsWith('refs/tags/'))
         throw new Error('Tag detected, not a branch');
-    }
     throw new Error(`Unknown ref format ${ref}`);
 }
-/**
- * Normalizes a branch name to lowercase and replaces non [a-z0-9-] chars with '-'.
- */
 function normalizeBranch(branch) {
     return branch.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 }
-/**
- * Normalizes the devPort value based on schema and port rules.
- * @param devSchema - The schema (http/https)
- * @param devPort - The port value
- * @returns Normalized port string (e.g., '', ':8080')
- * @throws Error if devPort is not a number and not empty
- */
 function normalizeDevPort(devSchema, devPort) {
     if ((devSchema === 'https://' && devPort === '443') ||
         (devSchema === 'http://' && devPort === '80')) {
