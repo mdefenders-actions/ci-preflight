@@ -27,12 +27,15 @@ describe('main.ts', () => {
   })
 
   it('should call setOutputs, log time, and set result output to ok', async () => {
+    const mockOutputs = { foo: 'bar' }
+    setOutputs.mockResolvedValueOnce(mockOutputs)
     await run()
     expect(setOutputs).toHaveBeenCalledTimes(1)
-    expect(core.debug).toHaveBeenCalledWith(
-      expect.stringMatching(/\d{2}:\d{2}:\d{2}/)
+    expect(core.setOutput).toHaveBeenCalledWith(
+      'result',
+      JSON.stringify(mockOutputs)
     )
-    expect(core.setOutput).toHaveBeenCalledWith('result', 'ok')
+    expect(core.summary.write).toHaveBeenCalled()
     expect(core.setFailed).not.toHaveBeenCalled()
   })
 
@@ -44,7 +47,7 @@ describe('main.ts', () => {
       `Action failed with error: ${error.message}`
     )
     expect(core.setFailed).toHaveBeenCalledWith(error.message)
-    expect(core.setOutput).toHaveBeenCalledWith('result', 'ok')
+    expect(core.setOutput).toHaveBeenCalledWith('result', JSON.stringify({}))
   })
 
   it('should handle unknown errors and set failure output', async () => {
@@ -54,6 +57,6 @@ describe('main.ts', () => {
       'Action failed with an unknown error'
     )
     expect(core.setFailed).toHaveBeenCalledWith('Unknown error occurred')
-    expect(core.setOutput).toHaveBeenCalledWith('result', 'ok')
+    expect(core.setOutput).toHaveBeenCalledWith('result', JSON.stringify({}))
   })
 })

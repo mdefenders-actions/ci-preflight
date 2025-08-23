@@ -27279,6 +27279,21 @@ function requireCore () {
 
 var coreExports = requireCore();
 
+/**
+ * Generates a Markdown table from the outputs object.
+ * The table has headers "Parameter" and "Value" and lists all key-value pairs.
+ * @param outputs - The outputs object containing key-value pairs
+ * @returns Markdown string with the table
+ */
+async function generateMarkDown(outputs) {
+    let markDown = `### PreFlight Chek Outputs\n\n`;
+    markDown += '| Parameter | Value |\n|-----------|-------|\n';
+    for (const [key, value] of Object.entries(outputs)) {
+        markDown += `| ${key} | ${value} |\n`;
+    }
+    return markDown;
+}
+
 var github = {};
 
 var context = {};
@@ -31235,8 +31250,10 @@ var githubExports = requireGithub();
 
 /**
  * Sets outputs for the GitHub Action.
+ * @returns An object containing all output key-value pairs
  */
 async function setOutputs() {
+    const result = {};
     const environment = coreExports.getInput('environment', {
         required: true
     });
@@ -31265,14 +31282,29 @@ async function setOutputs() {
     // Compose namespace
     const namespace = `${base}-${branch}`;
     coreExports.setOutput('target-namespace', namespace);
+    result['target-namespace'] = namespace;
     coreExports.setOutput('subdomain', branch);
-    coreExports.setOutput('start-time', Date.now());
+    result['subdomain'] = branch;
+    const startTime = Date.now();
+    coreExports.setOutput('start-time', startTime);
+    result['start-time'] = startTime;
     coreExports.setOutput('gitops-repo', gitopsRepo);
-    coreExports.setOutput('gitops-file', `${gitopsFilePath}/${environment}/${gitopsFileName}`);
+    result['gitops-repo'] = gitopsRepo;
+    const gitopsFile = `${gitopsFilePath}/${environment}/${gitopsFileName}`;
+    coreExports.setOutput('gitops-file', gitopsFile);
+    result['gitops-file'] = gitopsFile;
     coreExports.setOutput('app-name', appName);
-    coreExports.setOutput('local-service-fqdn', `${appName}.${branch}.svc.cluster.local`);
-    coreExports.setOutput('public-service-fqdn', `${appName}.${branch}.${domain}`);
-    coreExports.setOutput('service-url', `${devSchema}${appName}.${branch}.${domain}${devPort}`);
+    result['app-name'] = appName;
+    const localFqdn = `${appName}.${branch}.svc.cluster.local`;
+    coreExports.setOutput('local-service-fqdn', localFqdn);
+    result['local-service-fqdn'] = localFqdn;
+    const publicFqdn = `${appName}.${branch}.${domain}`;
+    coreExports.setOutput('public-service-fqdn', publicFqdn);
+    result['public-service-fqdn'] = publicFqdn;
+    const serviceUrl = `${devSchema}${appName}.${branch}.${domain}${devPort}`;
+    coreExports.setOutput('service-url', serviceUrl);
+    result['service-url'] = serviceUrl;
+    return result;
 }
 /**
  * Returns the branch name from the GitHub context.
@@ -31327,10 +31359,10 @@ function normalizeDevPort(devSchema, devPort) {
  * @returns Resolves when the action is complete.
  */
 async function run() {
+    let outputs = {};
     try {
         // Log the current timestamp, wait, then log the new timestamp
-        await setOutputs();
-        coreExports.debug(new Date().toTimeString());
+        outputs = await setOutputs();
         // Set outputs for other workflow steps to use
     }
     catch (error) {
@@ -31344,7 +31376,9 @@ async function run() {
         }
     }
     finally {
-        coreExports.setOutput('result', 'ok');
+        const markDownReport = await generateMarkDown(outputs);
+        coreExports.setOutput('result', JSON.stringify(outputs));
+        await coreExports.summary.addRaw(markDownReport, true).write();
     }
 }
 

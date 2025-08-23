@@ -3,8 +3,10 @@ import * as github from '@actions/github'
 
 /**
  * Sets outputs for the GitHub Action.
+ * @returns An object containing all output key-value pairs
  */
-export async function setOutputs(): Promise<void> {
+export async function setOutputs(): Promise<Record<string, string | number>> {
+  const result: Record<string, string | number> = {}
   const environment = core.getInput('environment', {
     required: true
   })
@@ -38,20 +40,29 @@ export async function setOutputs(): Promise<void> {
   const namespace = `${base}-${branch}`
 
   core.setOutput('target-namespace', namespace)
+  result['target-namespace'] = namespace
   core.setOutput('subdomain', branch)
-  core.setOutput('start-time', Date.now())
+  result['subdomain'] = branch
+  const startTime = Date.now()
+  core.setOutput('start-time', startTime)
+  result['start-time'] = startTime
   core.setOutput('gitops-repo', gitopsRepo)
-  core.setOutput(
-    'gitops-file',
-    `${gitopsFilePath}/${environment}/${gitopsFileName}`
-  )
+  result['gitops-repo'] = gitopsRepo
+  const gitopsFile = `${gitopsFilePath}/${environment}/${gitopsFileName}`
+  core.setOutput('gitops-file', gitopsFile)
+  result['gitops-file'] = gitopsFile
   core.setOutput('app-name', appName)
-  core.setOutput('local-service-fqdn', `${appName}.${branch}.svc.cluster.local`)
-  core.setOutput('public-service-fqdn', `${appName}.${branch}.${domain}`)
-  core.setOutput(
-    'service-url',
-    `${devSchema}${appName}.${branch}.${domain}${devPort}`
-  )
+  result['app-name'] = appName
+  const localFqdn = `${appName}.${branch}.svc.cluster.local`
+  core.setOutput('local-service-fqdn', localFqdn)
+  result['local-service-fqdn'] = localFqdn
+  const publicFqdn = `${appName}.${branch}.${domain}`
+  core.setOutput('public-service-fqdn', publicFqdn)
+  result['public-service-fqdn'] = publicFqdn
+  const serviceUrl = `${devSchema}${appName}.${branch}.${domain}${devPort}`
+  core.setOutput('service-url', serviceUrl)
+  result['service-url'] = serviceUrl
+  return result
 }
 
 /**
