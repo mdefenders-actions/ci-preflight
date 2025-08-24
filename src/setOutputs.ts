@@ -41,7 +41,11 @@ export async function setOutputs(): Promise<Record<string, string | number>> {
     localFqdn = `${appName}.prod.svc.cluster.local`
     publicFqdn = `${appName}.${domain}`
   }
-
+  const fullRepoName = `${github.context.repo.owner
+    .toLowerCase()
+    .replace(/[^a-z0-9_.\-/]/g, '-')}/${github.context.repo.repo
+    .toLowerCase()
+    .replace(/[^a-z0-9_.\-/]/g, '-')}`
   const outputs = {
     'target-namespace': namespace,
     'effective-branch': branch,
@@ -52,7 +56,8 @@ export async function setOutputs(): Promise<Record<string, string | number>> {
     'app-name': appName,
     'local-service-fqdn': localFqdn,
     'public-service-fqdn': publicFqdn,
-    'service-url': serviceUrl
+    'service-url': serviceUrl,
+    'image-repo': fullRepoName
   }
 
   for (const [key, value] of Object.entries(outputs)) {

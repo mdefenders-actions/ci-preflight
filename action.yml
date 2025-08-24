@@ -33,6 +33,9 @@ inputs:
   dev-port:
     description: Port for the dev environment service
     default: '80'
+  version-file:
+    description: The version file
+    default: version.json
 
 # Define your outputs here.
 outputs:
@@ -56,6 +59,10 @@ outputs:
     description: The local service FQDN
   service-url:
     description: The service URL
+  image-repo:
+    description: The image repository
+  promoted-version:
+    description: The promoted version
   result:
     description: The result of the action
 

@@ -27,6 +27,7 @@ import require$$6 from 'string_decoder';
 import require$$0$9 from 'diagnostics_channel';
 import require$$2$3 from 'child_process';
 import require$$6$1 from 'timers';
+import * as fs from 'fs/promises';
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -31286,6 +31287,11 @@ async function setOutputs() {
         localFqdn = `${appName}.prod.svc.cluster.local`;
         publicFqdn = `${appName}.${domain}`;
     }
+    const fullRepoName = `${githubExports.context.repo.owner
+        .toLowerCase()
+        .replace(/[^a-z0-9_.\-/]/g, '-')}/${githubExports.context.repo.repo
+        .toLowerCase()
+        .replace(/[^a-z0-9_.\-/]/g, '-')}`;
     const outputs = {
         'target-namespace': namespace,
         'effective-branch': branch,
@@ -31296,7 +31302,8 @@ async function setOutputs() {
         'app-name': appName,
         'local-service-fqdn': localFqdn,
         'public-service-fqdn': publicFqdn,
-        'service-url': serviceUrl
+        'service-url': serviceUrl,
+        'image-repo': fullRepoName
     };
     for (const [key, value] of Object.entries(outputs)) {
         coreExports.setOutput(key, value);
@@ -31336,6 +31343,46 @@ function normalizeDevPort(devSchema, devPort) {
     }
 }
 
+var execExports = requireExec();
+
+async function validateProdProm() {
+    const versionFile = coreExports.getInput('version-file', { required: true });
+    // Configure Git
+    await execExports.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]']);
+    await execExports.exec('git', [
+        'config',
+        '--global',
+        'user.email',
+        'github-actions[bot]@users.noreply.github.com'
+    ]);
+    await execExports.exec('git', ['pull', '--tags']);
+    // Read and validate version
+    const data = JSON.parse(await fs.readFile(versionFile, 'utf-8'));
+    if (!/^\d+\.\d+\.\d+$/.test(data.version)) {
+        throw new Error(`Invalid version in ${versionFile}: must be a valid semver (e.g., 1.2.3)`);
+    }
+    // Check if tag exists
+    let tagExists = false;
+    await execExports.exec('git', ['tag', '--list', data.version], {
+        listeners: {
+            stdout: (output) => {
+                if (output.toString().trim() === data.version)
+                    tagExists = true;
+            }
+        }
+    });
+    if (!tagExists) {
+        throw new Error(`Tag ${data.version} does not exist in the repository`);
+    }
+    // Validate version consistency
+    await execExports.exec('git', ['checkout', data.version]);
+    const dataFromTag = JSON.parse(await fs.readFile(versionFile, 'utf-8'));
+    if (dataFromTag.version !== data.version) {
+        throw new Error(`Version mismatch after checkout: expected ${data.version}, got ${dataFromTag.version}`);
+    }
+    return data.version;
+}
+
 /**
  * The main function for the action.
  *
@@ -31346,6 +31393,11 @@ async function run() {
     try {
         // Log the current timestamp, wait, then log the new timestamp
         outputs = await setOutputs();
+        if (coreExports.getInput('environment', { required: true }) === 'prod') {
+            const version = await validateProdProm();
+            outputs['promoted-version'] = version;
+            coreExports.setOutput('promoted-version', version);
+        }
         // Set outputs for other workflow steps to use
     }
     catch (error) {
