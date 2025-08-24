@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import { generateMarkDown } from './markDown.js'
 import { setOutputs } from './setOutputs.js'
+import { validateProdProm } from './validateProdProm.js'
 
 /**
  * The main function for the action.
@@ -8,10 +9,15 @@ import { setOutputs } from './setOutputs.js'
  * @returns Resolves when the action is complete.
  */
 export async function run(): Promise<void> {
-  let outputs = {}
+  let outputs: Record<string, string | number> = {}
   try {
     // Log the current timestamp, wait, then log the new timestamp
     outputs = await setOutputs()
+    if (core.getInput('environment', { required: true }) === 'prod') {
+      const version = await validateProdProm()
+      outputs['promoted-version'] = version
+      core.setOutput('promoted-version', version)
+    }
     // Set outputs for other workflow steps to use
   } catch (error: unknown) {
     if (error instanceof Error) {
