@@ -7,7 +7,7 @@
 export async function generateMarkDown(
   outputs: Record<string, string | number>
 ): Promise<string> {
-  let markDown = `### PreFlight Chek Outputs\n\n`
+  let markDown = `### PreFlight Check Outputs\n\n`
   markDown += '| Parameter | Value |\n|-----------|-------|\n'
   for (const [key, value] of Object.entries(outputs)) {
     markDown += `| ${key} | ${value} |\n`

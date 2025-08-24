@@ -27287,7 +27287,7 @@ var coreExports = requireCore();
  * @returns Markdown string with the table
  */
 async function generateMarkDown(outputs) {
-    let markDown = `### PreFlight Chek Outputs\n\n`;
+    let markDown = `### PreFlight Check Outputs\n\n`;
     markDown += '| Parameter | Value |\n|-----------|-------|\n';
     for (const [key, value] of Object.entries(outputs)) {
         markDown += `| ${key} | ${value} |\n`;

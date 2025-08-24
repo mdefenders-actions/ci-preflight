@@ -5,7 +5,7 @@ describe('generateMarkDown', () => {
   beforeEach(() => {
     core.getInput.mockClear()
     core.getInput.mockImplementation((name: string) => {
-      if (name === 'reportTitle') return 'PreFlight Chek Outputs'
+      if (name === 'reportTitle') return 'PreFlight Check Outputs'
       return ''
     })
   })
@@ -23,7 +23,7 @@ describe('generateMarkDown', () => {
       'service-url': 'http://Repo.feature-actions-test.example.com'
     }
     const expected =
-      '### PreFlight Chek Outputs\n\n' +
+      '### PreFlight Check Outputs\n\n' +
       '| Parameter | Value |\n' +
       '|-----------|-------|\n' +
       '| target-namespace | repo-feature-actions-test |\n' +
@@ -42,7 +42,7 @@ describe('generateMarkDown', () => {
   it('handles empty outputs', async () => {
     const outputs = {}
     const expected =
-      '### PreFlight Chek Outputs\n\n' +
+      '### PreFlight Check Outputs\n\n' +
       '| Parameter | Value |\n' +
       '|-----------|-------|\n'
     const result = await generateMarkDown(outputs)
@@ -55,7 +55,7 @@ describe('generateMarkDown', () => {
       hello: 'world'
     }
     const expected =
-      '### PreFlight Chek Outputs\n\n' +
+      '### PreFlight Check Outputs\n\n' +
       '| Parameter | Value |\n' +
       '|-----------|-------|\n' +
       '| foo | bar|baz |\n' +
